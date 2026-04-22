@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getLucideIcon } from '../../helpers/render';
@@ -25,7 +25,13 @@ import { ChevronLeft } from 'lucide-react';
 import { useSidebarCollapsed } from '../../hooks/common/useSidebarCollapsed';
 import { useSidebar } from '../../hooks/common/useSidebar';
 import { useMinimumLoadingTime } from '../../hooks/common/useMinimumLoadingTime';
-import { isAdmin, isRoot, showError } from '../../helpers';
+import {
+  filterLegacyChatMenuItems,
+  isAdmin,
+  isRoot,
+  showError,
+} from '../../helpers';
+import { StatusContext } from '../../context/Status';
 import SkeletonWrapper from './components/SkeletonWrapper';
 
 import { Nav, Divider, Button } from '@douyinfe/semi-ui';
@@ -53,6 +59,7 @@ const routerMap = {
 
 const SiderBar = ({ onNavigate = () => {} }) => {
   const { t } = useTranslation();
+  const [statusState] = useContext(StatusContext);
   const [collapsed, toggleCollapsed] = useSidebarCollapsed();
   const {
     isModuleVisible,
@@ -67,6 +74,17 @@ const SiderBar = ({ onNavigate = () => {} }) => {
   const [openedKeys, setOpenedKeys] = useState([]);
   const location = useLocation();
   const [routerMapState, setRouterMapState] = useState(routerMap);
+  const status = useMemo(() => {
+    if (statusState?.status) return statusState.status;
+    const savedStatus = localStorage.getItem('status');
+    if (!savedStatus) return {};
+    try {
+      return JSON.parse(savedStatus) || {};
+    } catch (err) {
+      return {};
+    }
+  }, [statusState?.status]);
+  const isInternalMode = status.internal_mode_enabled === true;
 
   const workspaceItems = useMemo(() => {
     const items = [
@@ -138,12 +156,15 @@ const SiderBar = ({ onNavigate = () => {} }) => {
 
     // 根据配置过滤项目
     const filteredItems = items.filter((item) => {
+      if (isInternalMode && item.itemKey === 'topup') {
+        return false;
+      }
       const configVisible = isModuleVisible('personal', item.itemKey);
       return configVisible;
     });
 
     return filteredItems;
-  }, [t, isModuleVisible]);
+  }, [isInternalMode, isModuleVisible, t]);
 
   const adminItems = useMemo(() => {
     const items = [
@@ -193,12 +214,15 @@ const SiderBar = ({ onNavigate = () => {} }) => {
 
     // 根据配置过滤项目
     const filteredItems = items.filter((item) => {
+      if (isInternalMode && ['subscription', 'redemption'].includes(item.itemKey)) {
+        return false;
+      }
       const configVisible = isModuleVisible('admin', item.itemKey);
       return configVisible;
     });
 
     return filteredItems;
-  }, [isAdmin(), isRoot(), t, isModuleVisible]);
+  }, [isAdmin(), isInternalMode, isModuleVisible, isRoot(), t]);
 
   const chatMenuItems = useMemo(() => {
     const items = [
@@ -222,6 +246,10 @@ const SiderBar = ({ onNavigate = () => {} }) => {
 
     return filteredItems;
   }, [chatItems, t, isModuleVisible]);
+
+  const visibleChatMenuItems = useMemo(() => {
+    return filterLegacyChatMenuItems(chatMenuItems, isInternalMode);
+  }, [chatMenuItems, isInternalMode]);
 
   // 更新路由映射，添加聊天路由
   const updateRouterMapWithChats = (chats) => {
@@ -440,12 +468,12 @@ const SiderBar = ({ onNavigate = () => {} }) => {
           }}
         >
           {/* 聊天区域 */}
-          {hasSectionVisibleModules('chat') && (
+          {hasSectionVisibleModules('chat') && visibleChatMenuItems.length > 0 && (
             <div className='sidebar-section'>
               {!collapsed && (
                 <div className='sidebar-group-label'>{t('聊天')}</div>
               )}
-              {chatMenuItems.map((item) => renderSubItem(item))}
+              {visibleChatMenuItems.map((item) => renderSubItem(item))}
             </div>
           )}
 

@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 For commercial licensing, please contact support@quantumnous.com
 */
 
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { Layout, TabPane, Tabs } from '@douyinfe/semi-ui';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -37,7 +37,7 @@ import {
 } from 'lucide-react';
 
 import SystemSetting from '../../components/settings/SystemSetting';
-import { isRoot } from '../../helpers';
+import { isRoot, shouldShowLegacyChatSettings } from '../../helpers';
 import OtherSetting from '../../components/settings/OtherSetting';
 import OperationSetting from '../../components/settings/OperationSetting';
 import RateLimitSetting from '../../components/settings/RateLimitSetting';
@@ -49,12 +49,25 @@ import DrawingSetting from '../../components/settings/DrawingSetting';
 import PaymentSetting from '../../components/settings/PaymentSetting';
 import ModelDeploymentSetting from '../../components/settings/ModelDeploymentSetting';
 import PerformanceSetting from '../../components/settings/PerformanceSetting';
+import { StatusContext } from '../../context/Status';
 
 const Setting = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const [statusState] = useContext(StatusContext);
   const [tabActiveKey, setTabActiveKey] = useState('1');
+  const status = useMemo(() => {
+    if (statusState?.status) return statusState.status;
+    const savedStatus = localStorage.getItem('status');
+    if (!savedStatus) return {};
+    try {
+      return JSON.parse(savedStatus) || {};
+    } catch (err) {
+      return {};
+    }
+  }, [statusState?.status]);
+  const internalModeEnabled = status.internal_mode_enabled === true;
   let panes = [];
 
   if (isRoot()) {
@@ -178,6 +191,9 @@ const Setting = () => {
       content: <OtherSetting />,
       itemKey: 'other',
     });
+  }
+  if (!shouldShowLegacyChatSettings(internalModeEnabled)) {
+    panes = panes.filter((pane) => pane.itemKey !== 'chats');
   }
   const onChangeTab = (key) => {
     setTabActiveKey(key);

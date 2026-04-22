@@ -131,6 +131,7 @@ const RegisterForm = () => {
   }, [statusState?.status]);
   const hasCustomOAuthProviders =
     (status.custom_oauth_providers || []).length > 0;
+  const isInternalMode = status.internal_mode_enabled === true;
   const hasOAuthRegisterOptions = Boolean(
     status.github_oauth ||
       status.discord_oauth ||
@@ -768,6 +769,57 @@ const RegisterForm = () => {
       </Modal>
     );
   };
+
+  if (isInternalMode) {
+    return (
+      <div className='relative overflow-hidden bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8'>
+        <div
+          className='blur-ball blur-ball-indigo'
+          style={{ top: '-80px', right: '-80px', transform: 'none' }}
+        />
+        <div
+          className='blur-ball blur-ball-teal'
+          style={{ top: '50%', left: '-120px' }}
+        />
+        <div className='w-full max-w-sm mt-[60px]'>
+          <div className='flex flex-col items-center'>
+            <div className='w-full max-w-md'>
+              <div className='flex items-center justify-center mb-6 gap-2'>
+                <img src={logo} alt='Logo' className='h-10 rounded-full' />
+                <Title heading={3} className='!text-gray-800'>
+                  {systemName}
+                </Title>
+              </div>
+
+              <Card className='border-0 !rounded-2xl overflow-hidden'>
+                <div className='flex justify-center pt-6 pb-2'>
+                  <Title
+                    heading={3}
+                    className='text-gray-800 dark:text-gray-200'
+                  >
+                    {t('内部使用')}
+                  </Title>
+                </div>
+                <div className='px-6 py-8 text-center space-y-4'>
+                  <Text type='secondary'>
+                    {t('当前站点已关闭自助注册，请联系管理员开通账号或直接使用既有账号登录。')}
+                  </Text>
+                  <Button
+                    theme='solid'
+                    type='primary'
+                    className='w-full !rounded-full'
+                    onClick={() => navigate('/login')}
+                  >
+                    {t('返回登录')}
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='relative overflow-hidden bg-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8'>

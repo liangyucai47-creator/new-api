@@ -133,6 +133,7 @@ const LoginForm = () => {
   }, [statusState?.status]);
   const hasCustomOAuthProviders =
     (status.custom_oauth_providers || []).length > 0;
+  const isInternalMode = status.internal_mode_enabled === true;
   const hasOAuthLoginOptions = Boolean(
     status.github_oauth ||
       status.discord_oauth ||
@@ -518,6 +519,13 @@ const LoginForm = () => {
               </Title>
             </div>
             <div className='px-2 py-8'>
+              {isInternalMode && (
+                <div className='mb-4 text-center'>
+                  <Text type='secondary'>
+                    {t('当前站点为内部模式，自助注册和密码重置已关闭。')}
+                  </Text>
+                </div>
+              )}
               <div className='space-y-3'>
                 {status.wechat_login && (
                   <Button
@@ -696,7 +704,7 @@ const LoginForm = () => {
                 </div>
               )}
 
-              {!status.self_use_mode_enabled && (
+              {!status.self_use_mode_enabled && !isInternalMode && (
                 <div className='mt-6 text-center text-sm'>
                   <Text>
                     {t('没有账户？')}{' '}
@@ -732,6 +740,13 @@ const LoginForm = () => {
               </Title>
             </div>
             <div className='px-2 py-8'>
+              {isInternalMode && (
+                <div className='mb-4 text-center'>
+                  <Text type='secondary'>
+                    {t('当前站点为内部模式，自助注册和密码重置已关闭。')}
+                  </Text>
+                </div>
+              )}
               {status.passkey_login && passkeySupported && (
                 <Button
                   theme='outline'
@@ -817,15 +832,17 @@ const LoginForm = () => {
                     {t('继续')}
                   </Button>
 
-                  <Button
-                    theme='borderless'
-                    type='tertiary'
-                    className='w-full !rounded-full'
-                    onClick={handleResetPasswordClick}
-                    loading={resetPasswordLoading}
-                  >
-                    {t('忘记密码？')}
-                  </Button>
+                  {!isInternalMode && (
+                    <Button
+                      theme='borderless'
+                      type='tertiary'
+                      className='w-full !rounded-full'
+                      onClick={handleResetPasswordClick}
+                      loading={resetPasswordLoading}
+                    >
+                      {t('忘记密码？')}
+                    </Button>
+                  )}
                 </div>
               </Form>
 
@@ -849,7 +866,7 @@ const LoginForm = () => {
                 </>
               )}
 
-              {!status.self_use_mode_enabled && (
+              {!status.self_use_mode_enabled && !isInternalMode && (
                 <div className='mt-6 text-center text-sm'>
                   <Text>
                     {t('没有账户？')}{' '}

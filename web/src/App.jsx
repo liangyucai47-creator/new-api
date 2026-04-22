@@ -18,10 +18,15 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import React, { lazy, Suspense, useContext, useMemo } from 'react';
-import { Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import Loading from './components/common/ui/Loading';
 import User from './pages/User';
-import { AuthRedirect, PrivateRoute, AdminRoute } from './helpers';
+import {
+  AuthRedirect,
+  PrivateRoute,
+  AdminRoute,
+  shouldRedirectLegacyChatRoute,
+} from './helpers';
 import RegisterForm from './components/auth/RegisterForm';
 import LoginForm from './components/auth/LoginForm';
 import NotFound from './pages/NotFound';
@@ -64,10 +69,21 @@ function DynamicOAuth2Callback() {
 function App() {
   const location = useLocation();
   const [statusState] = useContext(StatusContext);
+  const status = useMemo(() => {
+    if (statusState?.status) return statusState.status;
+    const savedStatus = localStorage.getItem('status');
+    if (!savedStatus) return {};
+    try {
+      return JSON.parse(savedStatus) || {};
+    } catch (err) {
+      return {};
+    }
+  }, [statusState?.status]);
+  const internalModeEnabled = status.internal_mode_enabled === true;
 
   // 获取模型广场权限配置
   const pricingRequireAuth = useMemo(() => {
-    const headerNavModulesConfig = statusState?.status?.HeaderNavModules;
+    const headerNavModulesConfig = status.HeaderNavModules;
     if (headerNavModulesConfig) {
       try {
         const modules = JSON.parse(headerNavModulesConfig);
@@ -85,7 +101,7 @@ function App() {
       }
     }
     return false; // 默认不需要登录
-  }, [statusState?.status?.HeaderNavModules]);
+  }, [status.HeaderNavModules]);
 
   return (
     <SetupCheck>
@@ -93,9 +109,13 @@ function App() {
         <Route
           path='/'
           element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <Home />
-            </Suspense>
+            internalModeEnabled ? (
+              <Navigate to='/console' replace />
+            ) : (
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <Home />
+              </Suspense>
+            )
           }
         />
         <Route
@@ -126,9 +146,13 @@ function App() {
         <Route
           path='/console/subscription'
           element={
-            <AdminRoute>
-              <Subscription />
-            </AdminRoute>
+            internalModeEnabled ? (
+              <Navigate to='/console' replace />
+            ) : (
+              <AdminRoute>
+                <Subscription />
+              </AdminRoute>
+            )
           }
         />
         <Route
@@ -158,9 +182,13 @@ function App() {
         <Route
           path='/console/redemption'
           element={
-            <AdminRoute>
-              <Redemption />
-            </AdminRoute>
+            internalModeEnabled ? (
+              <Navigate to='/console' replace />
+            ) : (
+              <AdminRoute>
+                <Redemption />
+              </AdminRoute>
+            )
           }
         />
         <Route
@@ -174,9 +202,13 @@ function App() {
         <Route
           path='/user/reset'
           element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <PasswordResetConfirm />
-            </Suspense>
+            internalModeEnabled ? (
+              <Navigate to='/login' replace />
+            ) : (
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <PasswordResetConfirm />
+              </Suspense>
+            )
           }
         />
         <Route
@@ -202,9 +234,13 @@ function App() {
         <Route
           path='/reset'
           element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <PasswordResetForm />
-            </Suspense>
+            internalModeEnabled ? (
+              <Navigate to='/login' replace />
+            ) : (
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <PasswordResetForm />
+              </Suspense>
+            )
           }
         />
         <Route
@@ -270,11 +306,15 @@ function App() {
         <Route
           path='/console/topup'
           element={
-            <PrivateRoute>
-              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <TopUp />
-              </Suspense>
-            </PrivateRoute>
+            internalModeEnabled ? (
+              <Navigate to='/console' replace />
+            ) : (
+              <PrivateRoute>
+                <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                  <TopUp />
+                </Suspense>
+              </PrivateRoute>
+            )
           }
         />
         <Route
@@ -318,19 +358,23 @@ function App() {
         <Route
           path='/pricing'
           element={
-            pricingRequireAuth ? (
-              <PrivateRoute>
-                <Suspense
-                  fallback={<Loading></Loading>}
-                  key={location.pathname}
-                >
+            internalModeEnabled ? (
+              <Navigate to='/console' replace />
+            ) : (
+              pricingRequireAuth ? (
+                <PrivateRoute>
+                  <Suspense
+                    fallback={<Loading></Loading>}
+                    key={location.pathname}
+                  >
+                    <Pricing />
+                  </Suspense>
+                </PrivateRoute>
+              ) : (
+                <Suspense fallback={<Loading></Loading>} key={location.pathname}>
                   <Pricing />
                 </Suspense>
-              </PrivateRoute>
-            ) : (
-              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <Pricing />
-              </Suspense>
+              )
             )
           }
         />
@@ -361,20 +405,28 @@ function App() {
         <Route
           path='/console/chat/:id?'
           element={
-            <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-              <Chat />
-            </Suspense>
+            shouldRedirectLegacyChatRoute(internalModeEnabled) ? (
+              <Navigate to='/console' replace />
+            ) : (
+              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                <Chat />
+              </Suspense>
+            )
           }
         />
         {/* 方便使用chat2link直接跳转聊天... */}
         <Route
           path='/chat2link'
           element={
-            <PrivateRoute>
-              <Suspense fallback={<Loading></Loading>} key={location.pathname}>
-                <Chat2Link />
-              </Suspense>
-            </PrivateRoute>
+            shouldRedirectLegacyChatRoute(internalModeEnabled) ? (
+              <Navigate to='/console' replace />
+            ) : (
+              <PrivateRoute>
+                <Suspense fallback={<Loading></Loading>} key={location.pathname}>
+                  <Chat2Link />
+                </Suspense>
+              </PrivateRoute>
+            )
           }
         />
         <Route path='*' element={<NotFound />} />

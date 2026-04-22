@@ -19,7 +19,12 @@ For commercial licensing, please contact support@quantumnous.com
 
 import { useMemo } from 'react';
 
-export const useNavigation = (t, docsLink, headerNavModules) => {
+export const useNavigation = (
+  t,
+  docsLink,
+  headerNavModules,
+  isInternalMode = false,
+) => {
   const mainNavLinks = useMemo(() => {
     // 默认配置，如果没有传入配置则显示所有模块
     const defaultModules = {
@@ -68,6 +73,9 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
 
     // 根据配置过滤导航链接
     return allLinks.filter((link) => {
+      if (isInternalMode && ['home', 'pricing'].includes(link.itemKey)) {
+        return false;
+      }
       if (link.itemKey === 'docs') {
         return docsLink && modules.docs;
       }
@@ -79,7 +87,7 @@ export const useNavigation = (t, docsLink, headerNavModules) => {
       }
       return modules[link.itemKey] === true;
     });
-  }, [t, docsLink, headerNavModules]);
+  }, [docsLink, headerNavModules, isInternalMode, t]);
 
   return {
     mainNavLinks,

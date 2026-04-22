@@ -49,6 +49,7 @@ export const useHeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
   const isNewYear = currentDate.getMonth() === 0 && currentDate.getDate() === 1;
 
   const isSelfUseMode = statusState?.status?.self_use_mode_enabled || false;
+  const isInternalMode = statusState?.status?.internal_mode_enabled || false;
   const docsLink = statusState?.status?.docs_link || '';
   const isDemoSiteMode = statusState?.status?.demo_site_enabled || false;
 
@@ -231,6 +232,7 @@ export const useHeaderBar = ({ onMobileMenuToggle, drawerOpen }) => {
     logo,
     isNewYear,
     isSelfUseMode,
+    isInternalMode,
     docsLink,
     isDemoSiteMode,
     isConsoleRoute,

@@ -102,7 +102,6 @@ const CustomInputRender = (props) => {
     };
   }, [handlePaste]);
 
-  // 清空按钮
   const styledClearNode = clearContextNode
     ? React.cloneElement(clearContextNode, {
         className: `!rounded-full !bg-gray-100 hover:!bg-red-500 hover:!text-white flex-shrink-0 transition-all ${clearContextNode.props.className || ''}`,
@@ -119,7 +118,22 @@ const CustomInputRender = (props) => {
       })
     : null;
 
-  // 发送按钮
+  const styledUploadNode = uploadNode
+    ? React.cloneElement(uploadNode, {
+        className: `!rounded-full !bg-gray-100 hover:!bg-blue-500 hover:!text-white flex-shrink-0 transition-all ${uploadNode.props.className || ''}`,
+        style: {
+          ...uploadNode.props.style,
+          width: '32px',
+          height: '32px',
+          minWidth: '32px',
+          padding: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+      })
+    : null;
+
   const styledSendNode = React.cloneElement(sendNode, {
     className: `!rounded-full !bg-purple-500 hover:!bg-purple-600 flex-shrink-0 transition-all ${sendNode.props.className || ''}`,
     style: {
@@ -142,10 +156,9 @@ const CustomInputRender = (props) => {
         onClick={onClick}
         title={t('支持 Ctrl+V 粘贴图片')}
       >
-        {/* 清空对话按钮 - 左边 */}
         {styledClearNode}
+        {styledUploadNode}
         <div className='flex-1'>{inputNode}</div>
-        {/* 发送按钮 - 右边 */}
         {styledSendNode}
       </div>
     </div>

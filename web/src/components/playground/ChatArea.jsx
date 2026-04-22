@@ -30,6 +30,12 @@ const ChatArea = ({
   styleState,
   showDebugPanel,
   roleInfo,
+  headerActions,
+  title,
+  subtitle,
+  placeholder,
+  uploadProps,
+  showDebugToggle = true,
   onMessageSend,
   onMessageCopy,
   onMessageReset,
@@ -46,6 +52,10 @@ const ChatArea = ({
     return <CustomInputRender {...props} />;
   }, []);
 
+  const resolvedTitle = title || t('AI 对话');
+  const resolvedSubtitle =
+    subtitle || inputs.model || t('选择模型开始对话');
+
   return (
     <Card
       className='h-full'
@@ -58,42 +68,66 @@ const ChatArea = ({
         overflow: 'hidden',
       }}
     >
-      {/* 聊天头部 */}
       {styleState.isMobile ? (
-        <div className='pt-4'></div>
+        <div className='border-b border-semi-color-border bg-semi-color-bg-0 px-4 py-3'>
+          <div className='flex items-start justify-between gap-3'>
+            <div>
+              <Typography.Title heading={6} className='!mb-0'>
+                {resolvedTitle}
+              </Typography.Title>
+              <Typography.Text className='text-sm text-semi-color-text-2'>
+                {resolvedSubtitle}
+              </Typography.Text>
+            </div>
+            <div className='flex items-center gap-2'>
+              {headerActions}
+              {showDebugToggle ? (
+                <Button
+                  icon={showDebugPanel ? <EyeOff size={14} /> : <Eye size={14} />}
+                  onClick={onToggleDebugPanel}
+                  theme='borderless'
+                  type='tertiary'
+                  size='small'
+                />
+              ) : null}
+            </div>
+          </div>
+        </div>
       ) : (
-        <div className='px-6 py-4 bg-gradient-to-r from-purple-500 to-blue-500 rounded-t-2xl'>
-          <div className='flex items-center justify-between'>
+        <div className='rounded-t-2xl bg-gradient-to-r from-purple-500 to-blue-500 px-6 py-4'>
+          <div className='flex items-center justify-between gap-4'>
             <div className='flex items-center gap-3'>
-              <div className='w-10 h-10 rounded-full bg-white/20 backdrop-blur flex items-center justify-center'>
+              <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/20 backdrop-blur'>
                 <MessageSquare size={20} className='text-white' />
               </div>
               <div>
-                <Typography.Title heading={5} className='!text-white mb-0'>
-                  {t('AI 对话')}
+                <Typography.Title heading={5} className='!mb-0 !text-white'>
+                  {resolvedTitle}
                 </Typography.Title>
-                <Typography.Text className='!text-white/80 text-sm hidden sm:inline'>
-                  {inputs.model || t('选择模型开始对话')}
+                <Typography.Text className='hidden text-sm !text-white/80 sm:inline'>
+                  {resolvedSubtitle}
                 </Typography.Text>
               </div>
             </div>
             <div className='flex items-center gap-2'>
-              <Button
-                icon={showDebugPanel ? <EyeOff size={14} /> : <Eye size={14} />}
-                onClick={onToggleDebugPanel}
-                theme='borderless'
-                type='primary'
-                size='small'
-                className='!rounded-lg !text-white/80 hover:!text-white hover:!bg-white/10'
-              >
-                {showDebugPanel ? t('隐藏调试') : t('显示调试')}
-              </Button>
+              {headerActions}
+              {showDebugToggle ? (
+                <Button
+                  icon={showDebugPanel ? <EyeOff size={14} /> : <Eye size={14} />}
+                  onClick={onToggleDebugPanel}
+                  theme='borderless'
+                  type='primary'
+                  size='small'
+                  className='!rounded-lg !text-white/80 hover:!bg-white/10 hover:!text-white'
+                >
+                  {showDebugPanel ? t('隐藏调试') : t('显示调试')}
+                </Button>
+              ) : null}
             </div>
           </div>
         </div>
       )}
 
-      {/* 聊天内容区域 */}
       <div className='flex-1 overflow-hidden'>
         <Chat
           ref={chatRef}
@@ -116,10 +150,11 @@ const ChatArea = ({
           onMessageDelete={onMessageDelete}
           showClearContext
           showStopGenerate
+          uploadProps={uploadProps}
           onStopGenerator={onStopGenerator}
           onClear={onClearMessages}
           className='h-full'
-          placeholder={t('请输入您的问题...')}
+          placeholder={placeholder || t('请输入您的问题...')}
         />
       </div>
     </Card>

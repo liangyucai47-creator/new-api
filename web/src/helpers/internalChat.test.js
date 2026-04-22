@@ -43,3 +43,16 @@ test('resolveDefaultChatContext intersects token limits with user models', async
   assert.deepEqual(result.models, ['deepseek-chat']);
   assert.equal(result.defaultModel, 'deepseek-chat');
 });
+
+test('buildConversationPreview prefers last text message', async () => {
+  const { buildConversationPreview } = await loadInternalChatHelpers();
+
+  assert.equal(typeof buildConversationPreview, 'function');
+
+  const preview = buildConversationPreview([
+    { role: 'user', content: 'hello team' },
+    { role: 'assistant', content: 'hi' },
+  ]);
+
+  assert.equal(preview, 'hi');
+});

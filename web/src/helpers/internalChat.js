@@ -25,6 +25,14 @@ function parseTokenModelLimits(modelLimits) {
   return normalizeModelList(String(modelLimits || '').split(','));
 }
 
+function extractTextFromContent(content) {
+  if (Array.isArray(content)) {
+    const textNode = content.find((item) => item?.type === 'text');
+    return String(textNode?.text || '').trim();
+  }
+  return String(content || '').trim();
+}
+
 export function resolveDefaultChatContext({ tokens = [], userModels = [] }) {
   const normalizedModels = normalizeModelList(userModels);
   const firstToken = tokens[0] || null;
@@ -48,4 +56,14 @@ export function resolveDefaultChatContext({ tokens = [], userModels = [] }) {
     models: visibleModels,
     defaultModel: visibleModels[0] || '',
   };
+}
+
+export function buildConversationPreview(messages = []) {
+  for (let index = messages.length - 1; index >= 0; index -= 1) {
+    const text = extractTextFromContent(messages[index]?.content);
+    if (text) {
+      return text;
+    }
+  }
+  return '';
 }

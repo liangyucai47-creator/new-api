@@ -54,6 +54,7 @@ import OAuth2Callback from './components/auth/OAuth2Callback';
 import PersonalSetting from './components/settings/PersonalSetting';
 import Setup from './pages/Setup';
 import SetupCheck from './components/layout/SetupCheck';
+import InternalChat from './pages/InternalChat';
 
 const Home = lazy(() => import('./pages/Home'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -80,6 +81,18 @@ function App() {
     }
   }, [statusState?.status]);
   const internalModeEnabled = status.internal_mode_enabled === true;
+  const currentUser = useMemo(() => {
+    const rawUser = localStorage.getItem('user');
+    if (!rawUser) {
+      return null;
+    }
+    try {
+      return JSON.parse(rawUser);
+    } catch (err) {
+      return null;
+    }
+  }, [location.pathname]);
+  const isAdminUser = Number(currentUser?.role) >= 10;
 
   // 获取模型广场权限配置
   const pricingRequireAuth = useMemo(() => {
@@ -176,6 +189,18 @@ function App() {
           element={
             <PrivateRoute>
               <Playground />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path='/console/internal-chat'
+          element={
+            <PrivateRoute>
+              {internalModeEnabled && isAdminUser ? (
+                <InternalChat />
+              ) : (
+                <Navigate to='/console' replace />
+              )}
             </PrivateRoute>
           }
         />

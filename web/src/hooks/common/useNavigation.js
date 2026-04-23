@@ -18,12 +18,14 @@ For commercial licensing, please contact support@quantumnous.com
 */
 
 import { useMemo } from 'react';
+import { buildInternalChatNavLinks } from '../../helpers/internalChat';
 
 export const useNavigation = (
   t,
   docsLink,
   headerNavModules,
   isInternalMode = false,
+  user = null,
 ) => {
   const mainNavLinks = useMemo(() => {
     // 默认配置，如果没有传入配置则显示所有模块
@@ -72,7 +74,7 @@ export const useNavigation = (
     ];
 
     // 根据配置过滤导航链接
-    return allLinks.filter((link) => {
+    const filteredLinks = allLinks.filter((link) => {
       if (isInternalMode && ['home', 'pricing'].includes(link.itemKey)) {
         return false;
       }
@@ -87,7 +89,13 @@ export const useNavigation = (
       }
       return modules[link.itemKey] === true;
     });
-  }, [docsLink, headerNavModules, isInternalMode, t]);
+
+    return buildInternalChatNavLinks({
+      isInternalMode,
+      user,
+      baseLinks: filteredLinks,
+    });
+  }, [docsLink, headerNavModules, isInternalMode, t, user]);
 
   return {
     mainNavLinks,

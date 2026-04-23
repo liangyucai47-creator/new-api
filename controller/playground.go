@@ -45,12 +45,14 @@ func Playground(c *gin.Context) {
 	}
 	userCache.WriteContext(c)
 
-	tempToken := &model.Token{
-		UserId: userId,
-		Name:   fmt.Sprintf("playground-%s", relayInfo.UsingGroup),
-		Group:  relayInfo.UsingGroup,
+	if _, hasTokenContext := c.Get("token_id"); !hasTokenContext {
+		tempToken := &model.Token{
+			UserId: userId,
+			Name:   fmt.Sprintf("playground-%s", relayInfo.UsingGroup),
+			Group:  relayInfo.UsingGroup,
+		}
+		_ = middleware.SetupContextForToken(c, tempToken)
 	}
-	_ = middleware.SetupContextForToken(c, tempToken)
 
 	Relay(c, types.RelayFormatOpenAI)
 }

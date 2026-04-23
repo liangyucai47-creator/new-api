@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-const defaultServerAddress = "http://localhost:3000"
+const defaultServerAddress = "http://localhost:5041"
 
 var ServerAddress = defaultServerAddress
 var WorkerUrl = ""

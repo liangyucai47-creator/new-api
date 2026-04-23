@@ -7,8 +7,8 @@ import (
 )
 
 func TestResolveServerAddress_Default(t *testing.T) {
-	require.Equal(t, defaultServerAddress, resolveServerAddress(""))
-	require.Equal(t, defaultServerAddress, resolveServerAddress("   "))
+	require.Equal(t, "http://localhost:5041", resolveServerAddress(""))
+	require.Equal(t, "http://localhost:5041", resolveServerAddress("   "))
 }
 
 func TestResolveServerAddress_NormalizesEnvValue(t *testing.T) {

@@ -22,6 +22,11 @@ tiktoken_cache
 web/bun.lock
 plans
 .claude
+deploy/ecs/.env.ecs
+deploy/ecs/nginx/certs/*
+!deploy/ecs/nginx/certs/.gitkeep
+deploy/ecs/nginx/www/*
+!deploy/ecs/nginx/www/.gitkeep
 
 electron/node_modules
 electron/dist

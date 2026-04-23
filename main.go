@@ -24,6 +24,7 @@ import (
 	"github.com/QuantumNous/new-api/service"
 	_ "github.com/QuantumNous/new-api/setting/performance_setting"
 	"github.com/QuantumNous/new-api/setting/ratio_setting"
+	"github.com/QuantumNous/new-api/setting/system_setting"
 
 	"github.com/bytedance/gopkg/util/gopool"
 	"github.com/gin-contrib/sessions"
@@ -251,6 +252,7 @@ func InitResources() error {
 
 	// 加载环境变量
 	common.InitEnv()
+	system_setting.LoadFromEnv()
 
 	logger.SetupLogger()
 
